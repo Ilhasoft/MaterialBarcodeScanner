@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/topLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -36,30 +37,31 @@
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/topText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="64dp"
         android:shadowColor="@color/text_shadow"
         android:shadowDx="1"
         android:shadowDy="1"
         android:shadowRadius="2"
-        android:layout_marginTop="64dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:id="@+id/topText"
-        android:layout_gravity="center_horizontal|top" />
+        android:textStyle="bold" />
 
-    <include layout="@layout/actions_main"/>
+    <include layout="@layout/actions_main" />
 
     <ImageView
+        android:id="@+id/barcode_square"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
+        android:layout_gravity="center"
         android:layout_margin="38dp"
-        android:id="@+id/barcode_square"
+        android:adjustViewBounds="true"
         android:alpha="0.5"
-        android:layout_gravity="center" />
+        tools:targetApi="honeycomb" />
 
 </FrameLayout>
