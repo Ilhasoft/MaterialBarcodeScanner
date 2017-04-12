@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
-import org.greenrobot.eventbus.EventBus;
-
 public class MaterialBarcodeScannerBuilder {
 
     protected Activity mActivity;
@@ -51,9 +49,10 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Called immediately after a barcode was scanned
+     *
      * @param onResultListener
      */
-    public MaterialBarcodeScannerBuilder withResultListener(@NonNull MaterialBarcodeScanner.OnResultListener onResultListener){
+    public MaterialBarcodeScannerBuilder withResultListener(@NonNull MaterialBarcodeScanner.OnResultListener onResultListener) {
         this.onResultListener = onResultListener;
         return this;
     }
@@ -70,6 +69,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Sets the activity which will be used as the parent of the MaterialBarcodeScanner activity
+     *
      * @param activity current activity which will contain the MaterialBarcodeScanner
      */
     public MaterialBarcodeScannerBuilder withActivity(@NonNull Activity activity) {
@@ -81,7 +81,7 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Makes the barcode scanner use the camera facing back
      */
-    public MaterialBarcodeScannerBuilder withBackfacingCamera(){
+    public MaterialBarcodeScannerBuilder withBackfacingCamera() {
         mFacing = CameraSource.CAMERA_FACING_BACK;
         return this;
     }
@@ -89,16 +89,17 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Makes the barcode scanner use camera facing front
      */
-    public MaterialBarcodeScannerBuilder withFrontfacingCamera(){
+    public MaterialBarcodeScannerBuilder withFrontfacingCamera() {
         mFacing = CameraSource.CAMERA_FACING_FRONT;
         return this;
     }
 
     /**
      * Either CameraSource.CAMERA_FACING_FRONT or CameraSource.CAMERA_FACING_BACK
+     *
      * @param cameraFacing
      */
-    public MaterialBarcodeScannerBuilder withCameraFacing(int cameraFacing){
+    public MaterialBarcodeScannerBuilder withCameraFacing(int cameraFacing) {
         mFacing = cameraFacing;
         return this;
     }
@@ -106,16 +107,17 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Enables or disables auto focusing on the camera
      */
-    public MaterialBarcodeScannerBuilder withEnableAutoFocus(boolean enabled){
+    public MaterialBarcodeScannerBuilder withEnableAutoFocus(boolean enabled) {
         mAutoFocusEnabled = enabled;
         return this;
     }
 
     /**
      * Sets the tracker color used by the barcode scanner, By default this is Material Red 500 (#F44336).
+     *
      * @param color
      */
-    public MaterialBarcodeScannerBuilder withTrackerColor(int color){
+    public MaterialBarcodeScannerBuilder withTrackerColor(int color) {
         mTrackerColor = color;
         return this;
     }
@@ -123,7 +125,7 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Enables or disables a bleep sound whenever a barcode is scanned
      */
-    public MaterialBarcodeScannerBuilder withBleepEnabled(boolean enabled){
+    public MaterialBarcodeScannerBuilder withBleepEnabled(boolean enabled) {
         mBleepEnabled = enabled;
         return this;
     }
@@ -131,7 +133,7 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Shows a text message at the top of the barcode scanner
      */
-    public MaterialBarcodeScannerBuilder withText(String text){
+    public MaterialBarcodeScannerBuilder withText(String text) {
         mText = text;
         return this;
     }
@@ -139,44 +141,50 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Shows a text message at the top of the barcode scanner
      */
-    public MaterialBarcodeScannerBuilder withFlashLightEnabledByDefault(){
+    public MaterialBarcodeScannerBuilder withFlashLightEnabledByDefault() {
         mFlashEnabledByDefault = true;
         return this;
     }
 
     /**
      * Bit mask (containing values like QR_CODE and so on) that selects which formats this barcode detector should recognize.
+     *
      * @param barcodeFormats
      * @return
      */
-    public MaterialBarcodeScannerBuilder withBarcodeFormats(int barcodeFormats){
+    public MaterialBarcodeScannerBuilder withBarcodeFormats(int barcodeFormats) {
         mBarcodeFormats = barcodeFormats;
         return this;
     }
 
     /**
      * Enables exclusive scanning on EAN-13, EAN-8, UPC-A, UPC-E, Code-39, Code-93, Code-128, ITF and Codabar barcodes.
+     *
      * @return
      */
     public MaterialBarcodeScannerBuilder withOnly2DScanning() {
-        mBarcodeFormats = Barcode.EAN_13 | Barcode.EAN_8 | Barcode.UPC_A | Barcode.UPC_A | Barcode.UPC_E | Barcode.CODE_39 | Barcode.CODE_93 | Barcode.CODE_128 | Barcode.ITF | Barcode.CODABAR;
+        mBarcodeFormats = Barcode.EAN_13 | Barcode.EAN_8 | Barcode.UPC_A | Barcode.UPC_A |
+                Barcode.UPC_E | Barcode.CODE_39 | Barcode.CODE_93 | Barcode.CODE_128 |
+                Barcode.ITF | Barcode.CODABAR;
         return this;
     }
 
     /**
      * Enables exclusive scanning on QR Code, Data Matrix, PDF-417 and Aztec barcodes.
+     *
      * @return
      */
-    public MaterialBarcodeScannerBuilder withOnly3DScanning(){
+    public MaterialBarcodeScannerBuilder withOnly3DScanning() {
         mBarcodeFormats = Barcode.QR_CODE | Barcode.DATA_MATRIX | Barcode.PDF417 | Barcode.AZTEC;
         return this;
     }
 
     /**
      * Enables exclusive scanning on QR Codes, no other barcodes will be detected
+     *
      * @return
      */
-    public MaterialBarcodeScannerBuilder withOnlyQRCodeScanning(){
+    public MaterialBarcodeScannerBuilder withOnlyQRCodeScanning() {
         mBarcodeFormats = Barcode.QR_CODE;
         return this;
     }
@@ -184,9 +192,10 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Enables the default center tracker. This tracker is always visible and turns green when a barcode is found.\n
      * Please note that you can still scan a barcode outside the center tracker! This is purely a visual change.
+     *
      * @return
      */
-    public MaterialBarcodeScannerBuilder withCenterTracker(){
+    public MaterialBarcodeScannerBuilder withCenterTracker() {
         mScannerMode = MaterialBarcodeScanner.SCANNER_MODE_CENTER;
         return this;
     }
@@ -194,11 +203,13 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Enables the center tracker with a custom drawable resource. This tracker is always visible.\n
      * Please note that you can still scan a barcode outside the center tracker! This is purely a visual change.
-     * @param trackerResourceId a drawable resource id
+     *
+     * @param trackerResourceId         a drawable resource id
      * @param detectedTrackerResourceId a drawable resource id for the detected tracker state
      * @return
      */
-    public MaterialBarcodeScannerBuilder withCenterTracker(int trackerResourceId, int detectedTrackerResourceId){
+    public MaterialBarcodeScannerBuilder withCenterTracker(int trackerResourceId,
+                                                           int detectedTrackerResourceId) {
         mScannerMode = MaterialBarcodeScanner.SCANNER_MODE_CENTER;
         mTrackerResourceID = trackerResourceId;
         mTrackerDetectedResourceID = detectedTrackerResourceId;
@@ -229,7 +240,7 @@ public class MaterialBarcodeScannerBuilder {
      */
     private void buildMobileVisionBarcodeDetector() {
         String focusMode = Camera.Parameters.FOCUS_MODE_FIXED;
-        if(mAutoFocusEnabled){
+        if (mAutoFocusEnabled) {
             focusMode = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
         }
         mBarcodeDetector = new BarcodeDetector.Builder(mActivity)
@@ -244,6 +255,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the activity associated with this builder
+     *
      * @return
      */
     public Activity getActivity() {
@@ -252,6 +264,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the barcode detector associated with this builder
+     *
      * @return
      */
     public BarcodeDetector getBarcodeDetector() {
@@ -260,6 +273,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the camera source associated with this builder
+     *
      * @return
      */
     public CameraSource getCameraSource() {
@@ -269,6 +283,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the tracker color associated with this builder
+     *
      * @return
      */
     public int getTrackerColor() {
@@ -277,6 +292,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the text associated with this builder
+     *
      * @return
      */
     public String getText() {
@@ -285,6 +301,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the bleep enabled value associated with this builder
+     *
      * @return
      */
     public boolean isBleepEnabled() {
@@ -293,6 +310,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the flash enabled by default value associated with this builder
+     *
      * @return
      */
     public boolean isFlashEnabledByDefault() {
@@ -301,6 +319,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the tracker detected resource id value associated with this builder
+     *
      * @return
      */
     public int getTrackerDetectedResourceID() {
@@ -309,6 +328,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the tracker resource id value associated with this builder
+     *
      * @return
      */
     public int getTrackerResourceID() {
@@ -317,6 +337,7 @@ public class MaterialBarcodeScannerBuilder {
 
     /**
      * Get the scanner mode value associated with this builder
+     *
      * @return
      */
     public int getScannerMode() {
