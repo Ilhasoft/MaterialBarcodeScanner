@@ -33,8 +33,6 @@ public class MaterialBarcodeScannerBuilder {
 
     protected int mBarcodeFormats = Barcode.ALL_FORMATS;
 
-    protected String mText = "";
-
     protected int mScannerMode = MaterialBarcodeScanner.SCANNER_MODE_FREE;
 
     protected int mTrackerResourceID = R.drawable.material_barcode_square_512;
@@ -133,14 +131,6 @@ public class MaterialBarcodeScannerBuilder {
     /**
      * Shows a text message at the top of the barcode scanner
      */
-    public MaterialBarcodeScannerBuilder withText(String text) {
-        mText = text;
-        return this;
-    }
-
-    /**
-     * Shows a text message at the top of the barcode scanner
-     */
     public MaterialBarcodeScannerBuilder withFlashLightEnabledByDefault() {
         mFlashEnabledByDefault = true;
         return this;
@@ -163,7 +153,7 @@ public class MaterialBarcodeScannerBuilder {
      * @return
      */
     public MaterialBarcodeScannerBuilder withOnly2DScanning() {
-        mBarcodeFormats = Barcode.EAN_13 | Barcode.EAN_8 | Barcode.UPC_A | Barcode.UPC_A |
+        mBarcodeFormats = Barcode.EAN_13 | Barcode.EAN_8 | Barcode.UPC_A |
                 Barcode.UPC_E | Barcode.CODE_39 | Barcode.CODE_93 | Barcode.CODE_128 |
                 Barcode.ITF | Barcode.CODABAR;
         return this;
@@ -288,15 +278,6 @@ public class MaterialBarcodeScannerBuilder {
      */
     public int getTrackerColor() {
         return mTrackerColor;
-    }
-
-    /**
-     * Get the text associated with this builder
-     *
-     * @return
-     */
-    public String getText() {
-        return mText;
     }
 
     /**
