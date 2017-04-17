@@ -66,12 +66,6 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
     }
 
     private void setupLayout() {
-        final TextView topTextView = (TextView) findViewById(R.id.topText);
-        assertNotNull(topTextView);
-        String topText = mMaterialBarcodeScannerBuilder.getText();
-        if (!mMaterialBarcodeScannerBuilder.getText().equals("")) {
-            topTextView.setText(topText);
-        }
         setupButtons();
         setupCenterTracker();
     }
@@ -79,6 +73,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
     private void setupCenterTracker() {
         if (mMaterialBarcodeScannerBuilder.getScannerMode() == MaterialBarcodeScanner.SCANNER_MODE_CENTER) {
             final ImageView centerTracker = (ImageView) findViewById(R.id.barcode_square);
+            assertNotNull(centerTracker);
             centerTracker.setImageResource(mMaterialBarcodeScannerBuilder.getTrackerResourceID());
             mGraphicOverlay.setVisibility(View.INVISIBLE);
         }
@@ -107,7 +102,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
-        final ImageView doneIcon = (ImageView) findViewById(R.id.doneIcon);
+        final TextView doneIcon = (TextView) findViewById(R.id.doneIcon);
         final ImageView flashToggleIcon = (ImageView) findViewById(R.id.flashIcon);
         assertNotNull(doneIcon);
         assertNotNull(flashToggleIcon);

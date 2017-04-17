@@ -9,7 +9,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.edwardvanraak.materialbarcodescanner.MaterialBarcodeScanner;
@@ -39,12 +38,12 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               startScan();
+                startScan();
             }
         });
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             Barcode restoredBarcode = savedInstanceState.getParcelable(BARCODE_KEY);
-            if(restoredBarcode != null){
+            if (restoredBarcode != null) {
                 result.setText(restoredBarcode.rawValue);
                 barcodeResult = restoredBarcode;
             }
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
                 .withBleepEnabled(true)
                 .withBackfacingCamera()
                 .withCenterTracker()
-                .withText("Scanning...")
                 .withResultListener(new MaterialBarcodeScanner.OnResultListener() {
                     @Override
                     public void onResult(Barcode barcode) {
