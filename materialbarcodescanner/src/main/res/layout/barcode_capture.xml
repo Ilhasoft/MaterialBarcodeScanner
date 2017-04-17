@@ -19,40 +19,35 @@
 
     </com.edwardvanraak.materialbarcodescanner.CameraSourcePreview>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:layout_gravity="center_horizontal|bottom"
-        android:visibility="gone">
+        android:layout_height="110dp"
+        android:background="@color/blackTranslucent50"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        tools:targetApi="honeycomb">
 
-        <TextView
-            android:id="@+id/textView"
+        <ImageView
+            android:id="@+id/flashIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center_horizontal|bottom"
-            android:text=""
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-    </RelativeLayout>
+            android:background="@drawable/ic_flash_on_white_24dp" />
 
-    <TextView
-        android:id="@+id/topText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|top"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="64dp"
-        android:shadowColor="@color/text_shadow"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="2"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@android:color/white"
-        android:textStyle="bold" />
+        <android.support.v4.widget.Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
-    <include layout="@layout/actions_main" />
+        <TextView
+            android:id="@+id/doneIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/finish_barcode_scanner"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/barcode_square"
@@ -63,5 +58,25 @@
         android:adjustViewBounds="true"
         android:alpha="0.5"
         tools:targetApi="honeycomb" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_gravity="bottom"
+        android:background="@color/blackTranslucent50"
+        tools:targetApi="honeycomb">
+
+        <TextView
+            android:id="@+id/barcode_quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:padding="12dp"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            tools:text="30 produtos encontrados" />
+
+    </FrameLayout>
 
 </FrameLayout>

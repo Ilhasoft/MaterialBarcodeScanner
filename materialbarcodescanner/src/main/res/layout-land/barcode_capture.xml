@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/topLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,46 +19,64 @@
 
     </com.edwardvanraak.materialbarcodescanner.CameraSourcePreview>
 
-    <RelativeLayout
-        android:visibility="gone"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:layout_gravity="center_horizontal|bottom">
-        <TextView
+        android:layout_height="80dp"
+        android:alpha="0.5"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        tools:targetApi="honeycomb">
+
+        <ImageView
+            android:id="@+id/flashIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text=""
-            android:id="@+id/textView"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
-    </RelativeLayout>
+            android:background="@drawable/ic_flash_on_white_24dp" />
 
-    <include layout="@layout/actions_main"/>
+        <android.support.v4.widget.Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/doneIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/finish_barcode_scanner"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+
+    </LinearLayout>
 
     <ImageView
+        android:id="@+id/barcode_square"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:adjustViewBounds="true"
+        android:layout_gravity="center"
         android:layout_margin="38dp"
-        android:id="@+id/barcode_square"
+        android:adjustViewBounds="true"
         android:alpha="0.5"
-        android:layout_gravity="center" />
+        tools:targetApi="honeycomb" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:shadowColor="@color/text_shadow"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="2"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:textColor="@android:color/white"
-        android:id="@+id/topText"
-        android:textStyle="bold"
-        android:layout_gravity="center" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_gravity="bottom"
+        android:alpha="0.5"
+        tools:targetApi="honeycomb">
+
+        <TextView
+            android:id="@+id/barcode_quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:padding="12dp"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="30 produtos encontrados" />
+
+    </FrameLayout>
 
 </FrameLayout>
