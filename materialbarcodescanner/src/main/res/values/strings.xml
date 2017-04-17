@@ -2,4 +2,6 @@
     <string name="library_name">MaterialBarcodeScanner</string>
     <string name="permission_camera_rationale">Access to the camera is needed for barcode detection.</string>
     <string name="no_camera_permission">Cannot start the barcode reader because the camera permission was not granted.</string>
+    <string name="barcode_scanner_quantity">%d produtos encontrados</string>
+    <string name="finish_barcode_scanner">Finalizar</string>
 </resources>
