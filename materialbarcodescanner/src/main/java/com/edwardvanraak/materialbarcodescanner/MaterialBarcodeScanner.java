@@ -72,7 +72,8 @@ public class MaterialBarcodeScanner {
             EventBus.getDefault().postSticky(this);
             Intent intent = new Intent(mMaterialBarcodeScannerBuilder.getActivity(),
                     MaterialBarcodeScannerActivity.class);
-            mMaterialBarcodeScannerBuilder.getActivity().startActivity(intent);
+            mMaterialBarcodeScannerBuilder.getActivity().startActivityForResult(intent,
+                    MaterialBarcodeScannerActivity.REQUEST_CODE_SCANNER);
         }
     }
 

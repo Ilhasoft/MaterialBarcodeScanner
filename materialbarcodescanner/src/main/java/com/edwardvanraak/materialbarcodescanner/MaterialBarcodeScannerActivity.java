@@ -29,6 +29,8 @@ import static junit.framework.Assert.assertNotNull;
 
 public class MaterialBarcodeScannerActivity extends AppCompatActivity {
 
+    public static final int REQUEST_CODE_SCANNER = 100;
+
     private static final int RC_HANDLE_GMS = 9001;
     private static final String TAG = "MaterialBarcodeScanner";
 
@@ -89,6 +91,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
                 mGraphicOverlay.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        setResult(RESULT_OK);
                         finish();
                     }
                 }, 50);
