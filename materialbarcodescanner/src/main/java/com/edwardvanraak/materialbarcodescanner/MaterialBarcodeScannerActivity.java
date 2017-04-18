@@ -184,7 +184,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    new CountDownTimer(500, 500) {
+                    new CountDownTimer(500, 100) {
                         @Override
                         public void onTick(long millisUntilFinished) {
                             centerTracker.setImageResource(mMaterialBarcodeScannerBuilder.getTrackerDetectedResourceID());
