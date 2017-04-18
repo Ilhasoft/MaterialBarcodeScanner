@@ -22,8 +22,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static junit.framework.Assert.assertNotNull;
 
@@ -45,7 +45,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
 
     private TextView scannersQuantity;
 
-    private List<String> barcodes;
+    private Set<String> barcodes;
 
     private boolean mFlashOn = false;
 
@@ -136,7 +136,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
      * again when the camera source is created.
      */
     private void startCameraSource() throws SecurityException {
-        barcodes = new ArrayList<>();
+        barcodes = new HashSet<>();
 
         // check that the device has play services available.
         mSoundPoolPlayer = new SoundPoolPlayer(this);
@@ -151,7 +151,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
             @Override
             public void onNewDetection(Barcode barcode) {
                 Log.d(TAG, "Barcode detected! - " + barcode.displayValue);
-                if (barcodes != null && !barcodes.contains(barcode.displayValue)) {
+                if (barcodes != null) {
                     barcodes.add(barcode.displayValue);
                     setScannersQuantity(barcodes.size());
                 }
