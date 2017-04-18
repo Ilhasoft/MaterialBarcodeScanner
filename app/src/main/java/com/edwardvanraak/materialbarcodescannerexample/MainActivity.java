@@ -59,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
                 .withEnableAutoFocus(true)
                 .withBleepEnabled(true)
                 .withBackfacingCamera()
-                .withCenterTracker()
+                .withCenterTracker(R.drawable.red_barcode_tracker,
+                        R.drawable.green_barcode_tracker_detected)
                 .withResultListener(new MaterialBarcodeScanner.OnResultListener() {
                     @Override
                     public void onResult(Barcode barcode) {
