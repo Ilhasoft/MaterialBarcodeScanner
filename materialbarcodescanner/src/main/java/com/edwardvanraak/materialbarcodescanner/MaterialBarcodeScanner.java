@@ -24,33 +24,30 @@ public class MaterialBarcodeScanner {
     /**
      * Scanner modes
      */
-    public static final int SCANNER_MODE_FREE = 1;
-    public static final int SCANNER_MODE_CENTER = 2;
+    static final int SCANNER_MODE_FREE = 1;
+    static final int SCANNER_MODE_CENTER = 2;
 
-    protected final MaterialBarcodeScannerBuilder mMaterialBarcodeScannerBuilder;
+    private final MaterialBarcodeScannerBuilder materialBarcodeScannerBuilder;
 
     private OnResultListener onResultListener;
 
     public MaterialBarcodeScanner(@NonNull MaterialBarcodeScannerBuilder materialBarcodeScannerBuilder) {
-        this.mMaterialBarcodeScannerBuilder = materialBarcodeScannerBuilder;
+        this.materialBarcodeScannerBuilder = materialBarcodeScannerBuilder;
     }
 
-    public void setOnResultListener(OnResultListener onResultListener) {
+    void setOnResultListener(OnResultListener onResultListener) {
         this.onResultListener = onResultListener;
+    }
+
+    MaterialBarcodeScannerBuilder getMaterialBarcodeScannerBuilder() {
+        return materialBarcodeScannerBuilder;
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onBarcodeScannerResult(Barcode barcode) {
         onResultListener.onResult(barcode);
         EventBus.getDefault().removeStickyEvent(barcode);
-        mMaterialBarcodeScannerBuilder.clean();
-    }
-
-    /**
-     * Interface definition for a callback to be invoked when a view is clicked.
-     */
-    public interface OnResultListener {
-        void onResult(Barcode barcode);
+        materialBarcodeScannerBuilder.clean();
     }
 
     /**
@@ -60,46 +57,48 @@ public class MaterialBarcodeScanner {
      */
     public void startScan() {
         EventBus.getDefault().register(this);
-        if (mMaterialBarcodeScannerBuilder.getActivity() == null) {
+        if (materialBarcodeScannerBuilder.getActivity() == null) {
             throw new RuntimeException("Could not start scan: Activity reference lost (please rebuild the MaterialBarcodeScanner before calling startScan)");
         }
-        int mCameraPermission = ActivityCompat.checkSelfPermission(mMaterialBarcodeScannerBuilder.getActivity(),
+        int mCameraPermission = ActivityCompat.checkSelfPermission(materialBarcodeScannerBuilder.getActivity(),
                 Manifest.permission.CAMERA);
         if (mCameraPermission != PackageManager.PERMISSION_GRANTED) {
             requestCameraPermission();
         } else {
-            //Open activity
             EventBus.getDefault().postSticky(this);
-            Intent intent = new Intent(mMaterialBarcodeScannerBuilder.getActivity(),
+            Intent intent = new Intent(materialBarcodeScannerBuilder.getActivity(),
                     MaterialBarcodeScannerActivity.class);
-            mMaterialBarcodeScannerBuilder.getActivity().startActivityForResult(intent,
+            materialBarcodeScannerBuilder.getActivity().startActivityForResult(intent,
                     MaterialBarcodeScannerActivity.REQUEST_CODE_SCANNER);
         }
     }
 
     private void requestCameraPermission() {
-        final String[] mPermissions = new String[]{Manifest.permission.CAMERA};
-        if (!ActivityCompat.shouldShowRequestPermissionRationale(mMaterialBarcodeScannerBuilder.getActivity(),
+        final String[] permissions = new String[]{Manifest.permission.CAMERA};
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(materialBarcodeScannerBuilder.getActivity(),
                 Manifest.permission.CAMERA)) {
-            ActivityCompat.requestPermissions(mMaterialBarcodeScannerBuilder.getActivity(),
-                    mPermissions, RC_HANDLE_CAMERA_PERM);
+            ActivityCompat.requestPermissions(materialBarcodeScannerBuilder.getActivity(),
+                    permissions, RC_HANDLE_CAMERA_PERM);
             return;
         }
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ActivityCompat.requestPermissions(mMaterialBarcodeScannerBuilder.getActivity(),
-                        mPermissions, RC_HANDLE_CAMERA_PERM);
+                ActivityCompat.requestPermissions(materialBarcodeScannerBuilder.getActivity(),
+                        permissions, RC_HANDLE_CAMERA_PERM);
             }
         };
-        Snackbar.make(mMaterialBarcodeScannerBuilder.mRootView, R.string.permission_camera_rationale,
+        Snackbar.make(materialBarcodeScannerBuilder.rootView, R.string.permission_camera_rationale,
                 Snackbar.LENGTH_INDEFINITE)
                 .setAction(android.R.string.ok, listener)
                 .show();
     }
 
-    public MaterialBarcodeScannerBuilder getMaterialBarcodeScannerBuilder() {
-        return mMaterialBarcodeScannerBuilder;
+    /**
+     * Interface definition for a callback to be invoked when a view is clicked.
+     */
+    public interface OnResultListener {
+        void onResult(Barcode barcode);
     }
 
 }

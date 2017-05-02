@@ -34,22 +34,16 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
     private static final int RC_HANDLE_GMS = 9001;
     private static final String TAG = "MaterialBarcodeScanner";
 
-    private MaterialBarcodeScanner mMaterialBarcodeScanner;
-    private MaterialBarcodeScannerBuilder mMaterialBarcodeScannerBuilder;
-
+    private MaterialBarcodeScannerBuilder materialBarcodeScannerBuilder;
     private BarcodeDetector barcodeDetector;
-
-    private CameraSourcePreview mCameraSourcePreview;
-
-    private GraphicOverlay<BarcodeGraphic> mGraphicOverlay;
-
-    private SoundPoolPlayer mSoundPoolPlayer;
+    private CameraSourcePreview cameraSourcePreview;
+    private GraphicOverlay<BarcodeGraphic> graphicOverlay;
+    private SoundPoolPlayer soundPoolPlayer;
 
     private TextView scannersQuantity;
-
     private Set<String> barcodes;
 
-    private boolean mFlashOn = false;
+    private boolean flashOn = false;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -65,11 +59,56 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onMaterialBarcodeScanner(MaterialBarcodeScanner materialBarcodeScanner) {
-        this.mMaterialBarcodeScanner = materialBarcodeScanner;
-        mMaterialBarcodeScannerBuilder = mMaterialBarcodeScanner.getMaterialBarcodeScannerBuilder();
-        barcodeDetector = mMaterialBarcodeScanner.getMaterialBarcodeScannerBuilder().getBarcodeDetector();
+        materialBarcodeScannerBuilder = materialBarcodeScanner.getMaterialBarcodeScannerBuilder();
+        barcodeDetector = materialBarcodeScanner.getMaterialBarcodeScannerBuilder().getBarcodeDetector();
         startCameraSource();
         setupLayout();
+    }
+
+    /**
+     * Starts or restarts the camera source, if it exists.  If the camera source doesn't exist yet
+     * (e.g., because onResume was called before the camera source was created), this will be called
+     * again when the camera source is created.
+     */
+    private void startCameraSource() throws SecurityException {
+        barcodes = new HashSet<>();
+        // check that the device has play services available.
+        soundPoolPlayer = new SoundPoolPlayer(this);
+        int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                getApplicationContext());
+        if (code != ConnectionResult.SUCCESS) {
+            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
+            dialog.show();
+        }
+        graphicOverlay = (GraphicOverlay<BarcodeGraphic>) findViewById(R.id.graphicOverlay);
+        BarcodeGraphicTracker.NewDetectionListener listener = new BarcodeGraphicTracker.NewDetectionListener() {
+            @Override
+            public void onNewDetection(Barcode barcode) {
+                Log.d(TAG, "Barcode detected! - " + barcode.displayValue);
+                if (barcodes != null) {
+                    barcodes.add(barcode.displayValue);
+                    setScannersQuantity(barcodes.size());
+                }
+                EventBus.getDefault().postSticky(barcode);
+                updateCenterTrackerAfterDetectedState();
+                if (materialBarcodeScannerBuilder.isBleepEnabled()) {
+                    soundPoolPlayer.playShortResource(R.raw.bleep);
+                }
+            }
+        };
+        BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(graphicOverlay, listener,
+                materialBarcodeScannerBuilder.getTrackerColor());
+        barcodeDetector.setProcessor(new MultiProcessor.Builder<>(barcodeFactory).build());
+        CameraSource cameraSource = materialBarcodeScannerBuilder.getCameraSource();
+        if (cameraSource != null) {
+            try {
+                cameraSourcePreview = (CameraSourcePreview) findViewById(R.id.preview);
+                cameraSourcePreview.start(cameraSource, graphicOverlay);
+            } catch (IOException e) {
+                Log.e(TAG, "Unable to start camera source.", e);
+                cameraSource.release();
+            }
+        }
     }
 
     private void setupLayout() {
@@ -88,7 +127,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
         doneIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGraphicOverlay.postDelayed(new Runnable() {
+                graphicOverlay.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         setResult(RESULT_OK);
@@ -100,27 +139,27 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
         flashToggleIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mFlashOn) {
+                if (flashOn) {
                     flashToggleIcon.setBackgroundResource(R.drawable.ic_flash_on_white_24dp);
                     disableTorch();
                 } else {
                     flashToggleIcon.setBackgroundResource(R.drawable.ic_flash_off_white_24dp);
                     enableTorch();
                 }
-                mFlashOn ^= true;
+                flashOn ^= true;
             }
         });
-        if (mMaterialBarcodeScannerBuilder.isFlashEnabledByDefault()) {
+        if (materialBarcodeScannerBuilder.isFlashEnabledByDefault()) {
             flashToggleIcon.setBackgroundResource(R.drawable.ic_flash_off_white_24dp);
         }
     }
 
     private void setupCenterTracker() {
-        if (mMaterialBarcodeScannerBuilder.getScannerMode() == MaterialBarcodeScanner.SCANNER_MODE_CENTER) {
+        if (materialBarcodeScannerBuilder.getScannerMode() == MaterialBarcodeScanner.SCANNER_MODE_CENTER) {
             final ImageView centerTracker = (ImageView) findViewById(R.id.barcode_square);
             assertNotNull(centerTracker);
-            centerTracker.setImageResource(mMaterialBarcodeScannerBuilder.getTrackerResourceID());
-            mGraphicOverlay.setVisibility(View.INVISIBLE);
+            centerTracker.setImageResource(materialBarcodeScannerBuilder.getTrackerResourceID());
+            graphicOverlay.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -133,55 +172,8 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Starts or restarts the camera source, if it exists.  If the camera source doesn't exist yet
-     * (e.g., because onResume was called before the camera source was created), this will be called
-     * again when the camera source is created.
-     */
-    private void startCameraSource() throws SecurityException {
-        barcodes = new HashSet<>();
-
-        // check that the device has play services available.
-        mSoundPoolPlayer = new SoundPoolPlayer(this);
-        int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-                getApplicationContext());
-        if (code != ConnectionResult.SUCCESS) {
-            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
-            dialog.show();
-        }
-        mGraphicOverlay = (GraphicOverlay<BarcodeGraphic>) findViewById(R.id.graphicOverlay);
-        BarcodeGraphicTracker.NewDetectionListener listener = new BarcodeGraphicTracker.NewDetectionListener() {
-            @Override
-            public void onNewDetection(Barcode barcode) {
-                Log.d(TAG, "Barcode detected! - " + barcode.displayValue);
-                if (barcodes != null) {
-                    barcodes.add(barcode.displayValue);
-                    setScannersQuantity(barcodes.size());
-                }
-                EventBus.getDefault().postSticky(barcode);
-                updateCenterTrackerAfterDetectedState();
-                if (mMaterialBarcodeScannerBuilder.isBleepEnabled()) {
-                    mSoundPoolPlayer.playShortResource(R.raw.bleep);
-                }
-            }
-        };
-        BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(mGraphicOverlay, listener,
-                mMaterialBarcodeScannerBuilder.getTrackerColor());
-        barcodeDetector.setProcessor(new MultiProcessor.Builder<>(barcodeFactory).build());
-        CameraSource mCameraSource = mMaterialBarcodeScannerBuilder.getCameraSource();
-        if (mCameraSource != null) {
-            try {
-                mCameraSourcePreview = (CameraSourcePreview) findViewById(R.id.preview);
-                mCameraSourcePreview.start(mCameraSource, mGraphicOverlay);
-            } catch (IOException e) {
-                Log.e(TAG, "Unable to start camera source.", e);
-                mCameraSource.release();
-            }
-        }
-    }
-
     private void updateCenterTrackerAfterDetectedState() {
-        if (mMaterialBarcodeScannerBuilder.getScannerMode() == MaterialBarcodeScanner.SCANNER_MODE_CENTER) {
+        if (materialBarcodeScannerBuilder.getScannerMode() == MaterialBarcodeScanner.SCANNER_MODE_CENTER) {
             final ImageView centerTracker = (ImageView) findViewById(R.id.barcode_square);
             assertNotNull(centerTracker);
             runOnUiThread(new Runnable() {
@@ -190,12 +182,12 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
                     new CountDownTimer(500, 100) {
                         @Override
                         public void onTick(long millisUntilFinished) {
-                            centerTracker.setImageResource(mMaterialBarcodeScannerBuilder.getTrackerDetectedResourceID());
+                            centerTracker.setImageResource(materialBarcodeScannerBuilder.getTrackerDetectedResourceID());
                         }
 
                         @Override
                         public void onFinish() {
-                            centerTracker.setImageResource(mMaterialBarcodeScannerBuilder.getTrackerResourceID());
+                            centerTracker.setImageResource(materialBarcodeScannerBuilder.getTrackerResourceID());
                         }
                     }.start();
                 }
@@ -204,20 +196,35 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
     }
 
     private void enableTorch() throws SecurityException {
-        mMaterialBarcodeScannerBuilder.getCameraSource().setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+        materialBarcodeScannerBuilder.getCameraSource().setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
         try {
-            mMaterialBarcodeScannerBuilder.getCameraSource().start();
+            materialBarcodeScannerBuilder.getCameraSource().start();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void disableTorch() throws SecurityException {
-        mMaterialBarcodeScannerBuilder.getCameraSource().setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+        materialBarcodeScannerBuilder.getCameraSource().setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
         try {
-            mMaterialBarcodeScannerBuilder.getCameraSource().start();
+            materialBarcodeScannerBuilder.getCameraSource().start();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void clean() {
+        EventBus.getDefault().removeStickyEvent(MaterialBarcodeScanner.class);
+        if (barcodes != null) {
+            barcodes.clear();
+        }
+        if (cameraSourcePreview != null) {
+            cameraSourcePreview.release();
+            cameraSourcePreview = null;
+        }
+        if (soundPoolPlayer != null) {
+            soundPoolPlayer.release();
+            soundPoolPlayer = null;
         }
     }
 
@@ -239,8 +246,8 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mCameraSourcePreview != null) {
-            mCameraSourcePreview.stop();
+        if (cameraSourcePreview != null) {
+            cameraSourcePreview.stop();
         }
     }
 
@@ -256,18 +263,4 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
         }
     }
 
-    private void clean() {
-        EventBus.getDefault().removeStickyEvent(MaterialBarcodeScanner.class);
-        if (barcodes != null) {
-            barcodes.clear();
-        }
-        if (mCameraSourcePreview != null) {
-            mCameraSourcePreview.release();
-            mCameraSourcePreview = null;
-        }
-        if (mSoundPoolPlayer != null) {
-            mSoundPoolPlayer.release();
-            mSoundPoolPlayer = null;
-        }
-    }
 }

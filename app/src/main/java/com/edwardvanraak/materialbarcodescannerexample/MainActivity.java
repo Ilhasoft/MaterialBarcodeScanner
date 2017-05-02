@@ -50,15 +50,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Build a new MaterialBarcodeScanner
+     */
     private void startScan() {
-        /**
-         * Build a new MaterialBarcodeScanner
-         */
         final MaterialBarcodeScanner materialBarcodeScanner = new MaterialBarcodeScannerBuilder()
                 .withActivity(MainActivity.this)
                 .withEnableAutoFocus(true)
                 .withBleepEnabled(true)
-                .withBackfacingCamera()
+                .withBackFacingCamera()
                 .withCenterTracker(R.drawable.red_barcode_tracker,
                         R.drawable.green_barcode_tracker_detected)
                 .withResultListener(new MaterialBarcodeScanner.OnResultListener() {

@@ -29,11 +29,11 @@ import java.util.Set;
  * A view which renders a series of custom graphics to be overlayed on top of an associated preview
  * (i.e., the camera preview).  The creator can add graphics objects, update the objects, and remove
  * them, triggering the appropriate drawing and invalidation within the view.<p>
- *
+ * <p>
  * Supports scaling and mirroring of the graphics relative the camera's preview properties.  The
  * idea is that detection items are expressed in terms of a preview size, but need to be scaled up
  * to the full view size, and also mirrored in the case of the front-facing camera.<p>
- *
+ * <p>
  * Associated {@link Graphic} items should use the following methods to convert to view coordinates
  * for the graphics that are drawn:
  * <ol>
@@ -44,24 +44,114 @@ import java.util.Set;
  * </ol>
  */
 public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
-    private final Object mLock = new Object();
-    private int mPreviewWidth;
-    private float mWidthScaleFactor = 1.0f;
-    private int mPreviewHeight;
-    private float mHeightScaleFactor = 1.0f;
-    private int mFacing = CameraSource.CAMERA_FACING_BACK;
-    private Set<T> mGraphics = new HashSet<>();
-    private T mFirstGraphic;
+
+    private final Object lock = new Object();
+    private Set<T> graphics = new HashSet<>();
+
+    private float widthScaleFactor = 1.0f;
+    private float heightScaleFactor = 1.0f;
+
+    private int previewHeight;
+    private int previewWidth;
+    private int cameraFacing = CameraSource.CAMERA_FACING_BACK;
+
+    private T firstGraphic;
+
+    public GraphicOverlay(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    /**
+     * Adds a graphic to the overlay.
+     */
+    public void add(T graphic) {
+        synchronized (lock) {
+            graphics.add(graphic);
+            if (firstGraphic == null) {
+                firstGraphic = graphic;
+            }
+        }
+        postInvalidate();
+    }
+
+    /**
+     * Removes a graphic from the overlay.
+     */
+    public void remove(T graphic) {
+        synchronized (lock) {
+            graphics.remove(graphic);
+            if (firstGraphic != null && firstGraphic.equals(graphic)) {
+                firstGraphic = null;
+            }
+        }
+        postInvalidate();
+    }
+
+    /**
+     * Removes all graphics from the overlay.
+     */
+    public void clear() {
+        synchronized (lock) {
+            graphics.clear();
+            firstGraphic = null;
+        }
+        postInvalidate();
+    }
+
+    /**
+     * Returns the first (oldest) graphic added.  This is used
+     * to get the barcode that was detected first.
+     *
+     * @return graphic containing the barcode, or null if no barcodes are detected.
+     */
+    public T getFirstGraphic() {
+        synchronized (lock) {
+            return firstGraphic;
+        }
+    }
+
+    /**
+     * Sets the camera attributes for size and facing direction, which informs how to transform
+     * image coordinates later.
+     */
+    public void setCameraInfo(int previewWidth, int previewHeight, int facing) {
+        synchronized (lock) {
+            this.previewWidth = previewWidth;
+            this.previewHeight = previewHeight;
+            cameraFacing = facing;
+        }
+        postInvalidate();
+    }
+
+    /**
+     * Draws the overlay with its associated graphic objects.
+     */
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        synchronized (lock) {
+            if ((previewWidth != 0) && (previewHeight != 0)) {
+                widthScaleFactor = (float) canvas.getWidth() / (float) previewWidth;
+                heightScaleFactor = (float) canvas.getHeight() / (float) previewHeight;
+            }
+
+            for (Graphic graphic : graphics) {
+                graphic.draw(canvas);
+            }
+        }
+    }
 
     /**
      * Base class for a custom graphics object to be rendered within the graphic overlay.  Subclass
      * this and implement the {@link Graphic#draw(Canvas)} method to define the
      * graphics element.  Add instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
      */
-    public static abstract class Graphic {
+    static abstract class Graphic {
+
         private GraphicOverlay mOverlay;
 
-        public Graphic(GraphicOverlay overlay) {
+        Graphic(GraphicOverlay overlay) {
             mOverlay = overlay;
         }
 
@@ -83,23 +173,23 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
          * Adjusts a horizontal value of the supplied value from the preview scale to the view
          * scale.
          */
-        public float scaleX(float horizontal) {
-            return horizontal * mOverlay.mWidthScaleFactor;
+        float scaleX(float horizontal) {
+            return horizontal * mOverlay.widthScaleFactor;
         }
 
         /**
          * Adjusts a vertical value of the supplied value from the preview scale to the view scale.
          */
-        public float scaleY(float vertical) {
-            return vertical * mOverlay.mHeightScaleFactor;
+        float scaleY(float vertical) {
+            return vertical * mOverlay.heightScaleFactor;
         }
 
         /**
          * Adjusts the x coordinate from the preview's coordinate system to the view coordinate
          * system.
          */
-        public float translateX(float x) {
-            if (mOverlay.mFacing == CameraSource.CAMERA_FACING_FRONT) {
+        float translateX(float x) {
+            if (mOverlay.cameraFacing == CameraSource.CAMERA_FACING_FRONT) {
                 return mOverlay.getWidth() - scaleX(x);
             } else {
                 return scaleX(x);
@@ -110,96 +200,13 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
          * Adjusts the y coordinate from the preview's coordinate system to the view coordinate
          * system.
          */
-        public float translateY(float y) {
+        float translateY(float y) {
             return scaleY(y);
         }
 
-        public void postInvalidate() {
+        void postInvalidate() {
             mOverlay.postInvalidate();
         }
     }
 
-    public GraphicOverlay(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    /**
-     * Removes all graphics from the overlay.
-     */
-    public void clear() {
-        synchronized (mLock) {
-            mGraphics.clear();
-            mFirstGraphic = null;
-        }
-        postInvalidate();
-    }
-
-    /**
-     * Adds a graphic to the overlay.
-     */
-    public void add(T graphic) {
-        synchronized (mLock) {
-            mGraphics.add(graphic);
-            if (mFirstGraphic == null) {
-                mFirstGraphic = graphic;
-            }
-        }
-        postInvalidate();
-    }
-
-    /**
-     * Removes a graphic from the overlay.
-     */
-    public void remove(T graphic) {
-        synchronized (mLock) {
-            mGraphics.remove(graphic);
-            if (mFirstGraphic != null && mFirstGraphic.equals(graphic)) {
-                mFirstGraphic = null;
-            }
-        }
-        postInvalidate();
-    }
-
-    /**
-     * Returns the first (oldest) graphic added.  This is used
-     * to get the barcode that was detected first.
-     * @return graphic containing the barcode, or null if no barcodes are detected.
-     */
-    public T getFirstGraphic() {
-        synchronized (mLock) {
-            return mFirstGraphic;
-        }
-    }
-
-    /**
-     * Sets the camera attributes for size and facing direction, which informs how to transform
-     * image coordinates later.
-     */
-    public void setCameraInfo(int previewWidth, int previewHeight, int facing) {
-        synchronized (mLock) {
-            mPreviewWidth = previewWidth;
-            mPreviewHeight = previewHeight;
-            mFacing = facing;
-        }
-        postInvalidate();
-    }
-
-    /**
-     * Draws the overlay with its associated graphic objects.
-     */
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        synchronized (mLock) {
-            if ((mPreviewWidth != 0) && (mPreviewHeight != 0)) {
-                mWidthScaleFactor = (float) canvas.getWidth() / (float) mPreviewWidth;
-                mHeightScaleFactor = (float) canvas.getHeight() / (float) mPreviewHeight;
-            }
-
-            for (Graphic graphic : mGraphics) {
-                graphic.draw(canvas);
-            }
-        }
-    }
 }

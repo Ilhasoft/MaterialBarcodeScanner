@@ -25,19 +25,19 @@ import com.google.android.gms.vision.barcode.Barcode;
  * to an overlay, update the graphics as the item changes, and remove the graphics when the item
  * goes away.
  */
-public class BarcodeGraphicTracker extends Tracker<Barcode> {
+class BarcodeGraphicTracker extends Tracker<Barcode> {
 
-    private NewDetectionListener mListener;
-    private GraphicOverlay<BarcodeGraphic> mOverlay;
-    private BarcodeGraphic mGraphic;
+    private NewDetectionListener listener;
+    private GraphicOverlay<BarcodeGraphic> graphicOverlay;
+    private BarcodeGraphic barcodeGraphic;
 
     BarcodeGraphicTracker(GraphicOverlay<BarcodeGraphic> overlay, BarcodeGraphic graphic) {
-        mOverlay = overlay;
-        mGraphic = graphic;
+        graphicOverlay = overlay;
+        barcodeGraphic = graphic;
     }
 
     public void setListener(NewDetectionListener mListener) {
-        this.mListener = mListener;
+        this.listener = mListener;
     }
 
     /**
@@ -45,9 +45,9 @@ public class BarcodeGraphicTracker extends Tracker<Barcode> {
      */
     @Override
     public void onNewItem(int id, Barcode item) {
-        mGraphic.setId(id);
-        if (mListener != null){
-            mListener.onNewDetection(item);
+        barcodeGraphic.setId(id);
+        if (listener != null) {
+            listener.onNewDetection(item);
         }
     }
 
@@ -56,8 +56,8 @@ public class BarcodeGraphicTracker extends Tracker<Barcode> {
      */
     @Override
     public void onUpdate(Detector.Detections<Barcode> detectionResults, Barcode item) {
-        mOverlay.add(mGraphic);
-        mGraphic.updateItem(item);
+        graphicOverlay.add(barcodeGraphic);
+        barcodeGraphic.updateItem(item);
     }
 
     /**
@@ -67,7 +67,7 @@ public class BarcodeGraphicTracker extends Tracker<Barcode> {
      */
     @Override
     public void onMissing(Detector.Detections<Barcode> detectionResults) {
-        mOverlay.remove(mGraphic);
+        graphicOverlay.remove(barcodeGraphic);
     }
 
     /**
@@ -76,10 +76,11 @@ public class BarcodeGraphicTracker extends Tracker<Barcode> {
      */
     @Override
     public void onDone() {
-        mOverlay.remove(mGraphic);
+        graphicOverlay.remove(barcodeGraphic);
     }
 
-    public interface NewDetectionListener {
+    interface NewDetectionListener {
         void onNewDetection(Barcode barcode);
     }
+
 }

@@ -25,45 +25,41 @@ import com.google.android.gms.vision.barcode.Barcode;
  * Graphic instance for rendering barcode position, size, and ID within an associated graphic
  * overlay view.
  */
-public class BarcodeGraphic extends GraphicOverlay.Graphic {
+class BarcodeGraphic extends GraphicOverlay.Graphic {
 
-    private int mId;
+    private Paint rectPaint;
+    private Paint textPaint;
+    private volatile Barcode barcode;
 
-    private static int mCurrentColorIndex = 0;
+    private int id;
+    private int strokeWidth = 24;
+    private int cornerWidth = 64;
+    private int cornerPadding = strokeWidth / 2;
 
-    private Paint mRectPaint;
-    private Paint mTextPaint;
-    private volatile Barcode mBarcode;
-
-    private int mStrokeWidth = 24;
-    private int mCornerWidth = 64;
-    private int mCorderPadding = mStrokeWidth / 2;
-
-    public BarcodeGraphic(GraphicOverlay overlay, final int trackerColor) {
+    BarcodeGraphic(GraphicOverlay overlay, final int trackerColor) {
         super(overlay);
 
-        mRectPaint = new Paint();
-        mRectPaint.setColor(trackerColor);
-        mRectPaint.setStyle(Paint.Style.STROKE);
-        mRectPaint.setStrokeWidth(mStrokeWidth);
-        //mRectPaint.setAlpha(100);
+        rectPaint = new Paint();
+        rectPaint.setColor(trackerColor);
+        rectPaint.setStyle(Paint.Style.STROKE);
+        rectPaint.setStrokeWidth(strokeWidth);
 
-        mTextPaint = new Paint();
-        mTextPaint.setColor(trackerColor);
-        mTextPaint.setFakeBoldText(true);
-        mTextPaint.setTextSize(46.0f);
+        textPaint = new Paint();
+        textPaint.setColor(trackerColor);
+        textPaint.setFakeBoldText(true);
+        textPaint.setTextSize(46.0f);
     }
 
     public int getId() {
-        return mId;
+        return id;
     }
 
     public void setId(int id) {
-        this.mId = id;
+        this.id = id;
     }
 
     public Barcode getBarcode() {
-        return mBarcode;
+        return barcode;
     }
 
     /**
@@ -71,7 +67,7 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
      * relevant portions of the overlay to trigger a redraw.
      */
     void updateItem(Barcode barcode) {
-        mBarcode = barcode;
+        this.barcode = barcode;
         postInvalidate();
     }
 
@@ -80,7 +76,7 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
      */
     @Override
     public void draw(Canvas canvas) {
-        Barcode barcode = mBarcode;
+        Barcode barcode = this.barcode;
         if (barcode == null) {
             return;
         }
@@ -92,33 +88,34 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
         rect.right = translateX(rect.right);
         rect.bottom = translateY(rect.bottom);
 
-        //canvas.drawRect(rect, mRectPaint);
+        //canvas.drawRect(rect, rectPaint);
 
         /**
          * Draw the top left corner
          */
-        canvas.drawLine(rect.left - mCorderPadding, rect.top, rect.left + mCornerWidth, rect.top, mRectPaint);
-        canvas.drawLine(rect.left, rect.top, rect.left, rect.top + mCornerWidth, mRectPaint);
+        canvas.drawLine(rect.left - cornerPadding, rect.top, rect.left + cornerWidth, rect.top, rectPaint);
+        canvas.drawLine(rect.left, rect.top, rect.left, rect.top + cornerWidth, rectPaint);
 
         /**
          * Draw the bottom left corner
          */
-        canvas.drawLine(rect.left, rect.bottom, rect.left, rect.bottom - mCornerWidth, mRectPaint);
-        canvas.drawLine(rect.left - mCorderPadding, rect.bottom, rect.left + mCornerWidth, rect.bottom, mRectPaint);
+        canvas.drawLine(rect.left, rect.bottom, rect.left, rect.bottom - cornerWidth, rectPaint);
+        canvas.drawLine(rect.left - cornerPadding, rect.bottom, rect.left + cornerWidth, rect.bottom, rectPaint);
 
         /**
          * Draw the top right corner
          */
-        canvas.drawLine(rect.right + mCorderPadding, rect.top, rect.right - mCornerWidth, rect.top, mRectPaint);
-        canvas.drawLine(rect.right, rect.top, rect.right, rect.top + mCornerWidth, mRectPaint);
+        canvas.drawLine(rect.right + cornerPadding, rect.top, rect.right - cornerWidth, rect.top, rectPaint);
+        canvas.drawLine(rect.right, rect.top, rect.right, rect.top + cornerWidth, rectPaint);
 
         /**
          * Draw the bottom right corner
          */
-        canvas.drawLine(rect.right + mCorderPadding, rect.bottom, rect.right - mCornerWidth, rect.bottom, mRectPaint);
-        canvas.drawLine(rect.right, rect.bottom, rect.right, rect.bottom - mCornerWidth, mRectPaint);
+        canvas.drawLine(rect.right + cornerPadding, rect.bottom, rect.right - cornerWidth, rect.bottom, rectPaint);
+        canvas.drawLine(rect.right, rect.bottom, rect.right, rect.bottom - cornerWidth, rectPaint);
 
         // Draws a label at the bottom of the barcode indicate the barcode value that was detected.
-        canvas.drawText(barcode.displayValue, rect.left, rect.bottom + 100, mTextPaint);
+        canvas.drawText(barcode.displayValue, rect.left, rect.bottom + 100, textPaint);
     }
+
 }
