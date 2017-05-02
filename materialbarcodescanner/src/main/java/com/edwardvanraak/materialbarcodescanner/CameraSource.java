@@ -137,6 +137,8 @@ class CameraSource {
     private Thread mProcessingThread;
     private FrameProcessingRunnable mFrameProcessor;
 
+    private Frame outputFrame;
+
     /**
      * Map to convert between a byte array, received from the camera, and its associated byte
      * buffer.  We use byte buffers internally because this is a more efficient way to call into
@@ -413,6 +415,13 @@ class CameraSource {
                 camera = null;
             }
         }
+    }
+
+    /**
+     * Returns the current frame capture by the camera.
+     */
+    Frame getOutputFrame() {
+        return outputFrame;
     }
 
     /**
@@ -1130,7 +1139,6 @@ class CameraSource {
          */
         @Override
         public void run() {
-            Frame outputFrame;
             ByteBuffer data;
 
             while (true) {
