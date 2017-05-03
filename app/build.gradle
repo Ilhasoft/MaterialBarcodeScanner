@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "25.0.3"
 
     defaultConfig {
         applicationId "com.edwardvanraak.materialbarcodescanner"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 1
-        versionName "0.0.6-ALPHA"
+        versionCode 2
+        versionName "1.0.0"
     }
     buildTypes {
         release {
@@ -26,4 +26,6 @@ dependencies {
 
     compile 'com.android.support:appcompat-v7:25.3.0'
     compile 'com.android.support:design:25.3.0'
+    
+    compile 'com.google.android.gms:play-services-vision:10.2.1'
 }
