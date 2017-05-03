@@ -1,21 +1,29 @@
 package com.edwardvanraak.materialbarcodescanner;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.android.gms.vision.text.TextBlock;
+import com.google.android.gms.vision.text.TextRecognizer;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -29,15 +37,16 @@ import static junit.framework.Assert.assertNotNull;
 
 public class MaterialBarcodeScannerActivity extends AppCompatActivity {
 
-    public static final int REQUEST_CODE_SCANNER = 100;
-
-    private static final int RC_HANDLE_GMS = 9001;
     private static final String TAG = "MaterialBarcodeScanner";
+
+    public static final int REQUEST_CODE_SCANNER = 100;
+    private static final int RC_HANDLE_GMS = 9001;
 
     private MaterialBarcodeScannerBuilder materialBarcodeScannerBuilder;
     private BarcodeDetector barcodeDetector;
+
     private CameraSourcePreview cameraSourcePreview;
-    private GraphicOverlay<BarcodeGraphic> graphicOverlay;
+    private GraphicOverlay<BarcodeGraphic> barcodeGraphicOverlay;
     private SoundPoolPlayer soundPoolPlayer;
 
     private TextView scannersQuantity;
@@ -52,7 +61,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
-            Log.e(TAG, "Barcode scanner could not go into fullscreen mode!");
+            Log.e(TAG, getString(R.string.fullscreen_mode_error));
         }
         setContentView(R.layout.barcode_capture);
     }
@@ -61,7 +70,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
     public void onMaterialBarcodeScanner(MaterialBarcodeScanner materialBarcodeScanner) {
         materialBarcodeScannerBuilder = materialBarcodeScanner.getMaterialBarcodeScannerBuilder();
         barcodeDetector = materialBarcodeScanner.getMaterialBarcodeScannerBuilder().getBarcodeDetector();
-        startCameraSource();
+        startBarcodeCameraSource();
         setupLayout();
     }
 
@@ -70,7 +79,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
      * (e.g., because onResume was called before the camera source was created), this will be called
      * again when the camera source is created.
      */
-    private void startCameraSource() throws SecurityException {
+    private void startBarcodeCameraSource() throws SecurityException {
         barcodes = new HashSet<>();
         // check that the device has play services available.
         soundPoolPlayer = new SoundPoolPlayer(this);
@@ -80,7 +89,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
             Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
             dialog.show();
         }
-        graphicOverlay = (GraphicOverlay<BarcodeGraphic>) findViewById(R.id.graphicOverlay);
+        barcodeGraphicOverlay = (GraphicOverlay<BarcodeGraphic>) findViewById(R.id.graphicOverlay);
         BarcodeGraphicTracker.NewDetectionListener listener = new BarcodeGraphicTracker.NewDetectionListener() {
             @Override
             public void onNewDetection(Barcode barcode) {
@@ -88,6 +97,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
                 if (barcodes != null) {
                     barcodes.add(barcode.displayValue);
                     setScannersQuantity(barcodes.size());
+                    startOcrCameraDetector();
                 }
                 EventBus.getDefault().postSticky(barcode);
                 updateCenterTrackerAfterDetectedState();
@@ -96,17 +106,49 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
                 }
             }
         };
-        BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(graphicOverlay, listener,
+        BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(barcodeGraphicOverlay, listener,
                 materialBarcodeScannerBuilder.getTrackerColor());
         barcodeDetector.setProcessor(new MultiProcessor.Builder<>(barcodeFactory).build());
         CameraSource cameraSource = materialBarcodeScannerBuilder.getCameraSource();
         if (cameraSource != null) {
             try {
                 cameraSourcePreview = (CameraSourcePreview) findViewById(R.id.preview);
-                cameraSourcePreview.start(cameraSource, graphicOverlay);
+                cameraSourcePreview.start(cameraSource, barcodeGraphicOverlay);
             } catch (IOException e) {
-                Log.e(TAG, "Unable to start camera source.", e);
+                Log.e(TAG, getString(R.string.barcode_camera_source_error), e);
                 cameraSource.release();
+            }
+        }
+    }
+
+    /**
+     * Starts OCR detector on frame returned from camera.
+     */
+    @SuppressLint("InlinedApi")
+    private void startOcrCameraDetector() {
+        Context context = getApplicationContext();
+
+        TextRecognizer textRecognizer = new TextRecognizer.Builder(context).build();
+        SparseArray<TextBlock> sparseArray = textRecognizer.detect(materialBarcodeScannerBuilder
+                .getCameraSource().getOutputFrame());
+
+        //TODO: Make actions based on text values found
+        if (sparseArray.size() > 0) {
+            for (int i = 0; i < sparseArray.size(); i++) {
+                Log.d(TAG, sparseArray.valueAt(i).getValue());
+            }
+        }
+
+        if (!textRecognizer.isOperational()) {
+            Log.w(TAG, getString(R.string.text_recognizer_dependencies_error));
+
+            // Check for low storage.  If there is low storage, the native library will not be
+            // downloaded, so detection will not become operational.
+            IntentFilter lowStorageFilter = new IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW);
+            boolean hasLowStorage = registerReceiver(null, lowStorageFilter) != null;
+
+            if (hasLowStorage) {
+                Toast.makeText(this, R.string.low_storage_error, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -127,7 +169,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
         doneIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                graphicOverlay.postDelayed(new Runnable() {
+                barcodeGraphicOverlay.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         setResult(RESULT_OK);
@@ -159,7 +201,7 @@ public class MaterialBarcodeScannerActivity extends AppCompatActivity {
             final ImageView centerTracker = (ImageView) findViewById(R.id.barcode_square);
             assertNotNull(centerTracker);
             centerTracker.setImageResource(materialBarcodeScannerBuilder.getTrackerResourceID());
-            graphicOverlay.setVisibility(View.INVISIBLE);
+            barcodeGraphicOverlay.setVisibility(View.INVISIBLE);
         }
     }
 
